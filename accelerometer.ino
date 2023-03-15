@@ -18,6 +18,26 @@
 #include <Adafruit_ST7789.h> // Hardware-specific library for ST7789
 #include <SPI.h>
 
+typedef enum {
+  LEFT_KEY,
+  RIGH_KEY,
+  MENU_KEY_SHORT,
+  MENU_KEY_LONG,      
+} key_e;
+
+
+typedef void (*onEnter_fp)(void);
+typedef void (*onExit_fp)(void);
+typedef void (*tickMs_fp)(void);
+typedef void (*onKeyPressed_fp)(key_e);
+
+struct screen_t{
+    onEnter_fp onEnter;
+    tickMs_fp tickMs;
+    onExit_fp onExit;
+    onKeyPressed_fp onKeyPressed;
+};
+
 // Use dedicated hardware SPI pins
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
