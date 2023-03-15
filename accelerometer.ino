@@ -41,6 +41,36 @@ struct screen_t{
 // Use dedicated hardware SPI pins
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
+
+screen_t screens[] = {
+  { screen1_onEnter, screen1_tickMs, screen1_onExit, screen1_onKeyPressed },
+  { screen2_onEnter, screen2_tickMs, screen2_onExit, screen2_onKeyPressed },
+  { screen3_onEnter, screen3_tickMs, screen3_onExit, screen3_onKeyPressed },
+  { screen4_onEnter, screen4_tickMs, screen4_onExit, screen4_onKeyPressed }
+};
+
+int currentScreen = 0;
+
+void setup() {
+  tft.initR(INITR_BLACKTAB);
+}
+
+void loop() {
+  screens[currentScreen].tickMs();
+  
+  key_e key = readKeyboard();
+  if (key != KEY_NONE) {
+    screens[currentScreen].onKeyPressed(key);
+  }
+}
+
+void changeScreen(int newScreen) {
+  screens[currentScreen].onExit();
+  currentScreen = newScreen;
+  screens[currentScreen].onEnter();
+}
+
+
 float p = 3.1415926;
 
 void setup(void) {
