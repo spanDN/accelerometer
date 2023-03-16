@@ -19,6 +19,7 @@
 #include <SPI.h>
 
 typedef enum {
+  KEY_NONE,
   LEFT_KEY,
   RIGH_KEY,
   MENU_KEY_SHORT,
@@ -26,6 +27,7 @@ typedef enum {
 } key_e;
 
 
+typedef void (*setup_fp)(void);
 typedef void (*onEnter_fp)(void);
 typedef void (*onExit_fp)(void);
 typedef void (*tickMs_fp)(void);
@@ -41,18 +43,77 @@ struct screen_t{
 // Use dedicated hardware SPI pins
 Adafruit_ST7789 tft = Adafruit_ST7789(TFT_CS, TFT_DC, TFT_RST);
 
+void onEnterStat(void)
+{
+  float p = 3.1415926;
+  tft.setTextWrap(false);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setCursor(0, 30);
+  tft.setTextColor(ST77XX_RED);
+  tft.setTextSize(1);
+  tft.println("Hello World!");
+  tft.setTextColor(ST77XX_YELLOW);
+  tft.setTextSize(2);
+  tft.println("Hello World!");
+  tft.setTextColor(ST77XX_GREEN);
+  tft.setTextSize(3);
+  tft.println("Hello World!");
+  tft.setTextColor(ST77XX_BLUE);
+  tft.setTextSize(4);
+  tft.print(1234.567);
+  delay(1500);
+  tft.setCursor(0, 0);
+  tft.fillScreen(ST77XX_BLACK);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.setTextSize(0);
+  tft.println("Hello World!");
+  tft.setTextSize(1);
+  tft.setTextColor(ST77XX_GREEN);
+  tft.print(p, 6);
+  tft.println(" Want pi?");
+  tft.println(" ");
+  tft.print(8675309, HEX); // print 8,675,309 out in HEX!
+  tft.println(" Print HEX!");
+  tft.println(" ");
+  tft.setTextColor(ST77XX_WHITE);
+  tft.println("Sketch has been");
+  tft.println("running for: ");
+  tft.setTextColor(ST77XX_MAGENTA);
+  tft.print(millis() / 1000);
+  tft.setTextColor(ST77XX_WHITE);
+  tft.print(" seconds.");
+}
+
+void onExitStat(void) { }
+void tickMsStat(void) { }
+void onKeyPressedStat(key_e) {  }
+
+key_e readKeyboard(void)
+{
+  return KEY_NONE;
+}
 
 screen_t screens[] = {
-  { screen1_onEnter, screen1_tickMs, screen1_onExit, screen1_onKeyPressed },
-  { screen2_onEnter, screen2_tickMs, screen2_onExit, screen2_onKeyPressed },
-  { screen3_onEnter, screen3_tickMs, screen3_onExit, screen3_onKeyPressed },
-  { screen4_onEnter, screen4_tickMs, screen4_onExit, screen4_onKeyPressed }
+  {onEnterStat, tickMsStat, onExitStat, onKeyPressedStat},
 };
 
 int currentScreen = 0;
 
 void setup() {
-  tft.initR(INITR_BLACKTAB);
+    // turn on backlite
+  pinMode(TFT_BACKLITE, OUTPUT);
+  digitalWrite(TFT_BACKLITE, HIGH);
+
+  // turn on the TFT / I2C power supply
+  pinMode(TFT_I2C_POWER, OUTPUT);
+  digitalWrite(TFT_I2C_POWER, HIGH);
+  delay(10);
+
+  // initialize TFT
+  tft.init(135, 240); // Init ST7789 240x135
+  tft.setRotation(3);
+  tft.fillScreen(ST77XX_BLACK);
+  screens[currentScreen].onEnter();
 }
 
 void loop() {
@@ -70,7 +131,7 @@ void changeScreen(int newScreen) {
   screens[currentScreen].onEnter();
 }
 
-
+#ifdef SPAN
 float p = 3.1415926;
 
 void setup(void) {
@@ -350,3 +411,5 @@ void mediabuttons() {
   // play color
   tft.fillTriangle(42, 12, 42, 60, 90, 40, ST77XX_GREEN);
 }
+
+#endif
